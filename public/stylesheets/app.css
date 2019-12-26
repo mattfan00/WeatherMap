@@ -1,0 +1,26 @@
+.main-form {
+  margin-top: 15%
+}
+
+.results-form {
+  margin-top: 2%;
+  margin-bottom: 4%
+}
+
+body {
+  height: 0
+}
+
+.center-content {
+  text-align: center !important
+}
+
+.main-input {
+  border-bottom: 2.5px solid black;
+  padding-bottom: 10px;
+}
+
+.results-input {
+  border-bottom: 1.5px solid black;
+  padding-bottom: 10px;
+}

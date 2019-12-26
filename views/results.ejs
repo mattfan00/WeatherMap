@@ -1,0 +1,59 @@
+<%- include('partials/header.ejs') %>
+
+
+<form class="results-form" action="/results" method="GET"> 
+  <div class="ui stackable centered grid">
+    <div class="four wide column">
+      <div class="ui fluid large transparent input results-input">
+        <input type="text" placeholder="Start" name="start" value="<%= startLocation %>">
+      </div>
+    </div>
+    <div class="four wide column">
+      <div class="ui fluid large transparent input results-input">
+        <input type="text" placeholder="End" name="end" value="<%= endLocation %>">
+      </div>
+    </div>
+    <div class="two wide column">
+      <button class="ui large button" type="Submit">Search</button>
+    </div>
+  </div>
+</form>
+
+
+<div class="ui four column centered grid">
+  <div class="column">
+    <div class="ui card">
+      <div class="content">
+        <div class="header"><%= startLocation %></div>
+        <div class="meta"><%= startWeather.daily.data[0].summary %></div>
+        <div class="ui statistic">
+          <div class="value"><%= Math.round(startWeather.daily.data[0].temperatureMax) %>&deg;</div>
+          <div class="label">High</div>
+        </div>
+        <div class="ui statistic">
+          <div class="value"><%= Math.round(startWeather.daily.data[0].temperatureMin) %>&deg;</div>
+          <div class="label">Low</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="column">
+    <div class="ui card">
+      <div class="content">
+        <div class="header"><%= endLocation %></div>
+        <div class="meta"><%= endWeather.daily.data[0].summary %></div>
+        <div class="ui statistic">
+          <div class="value"><%= Math.round(endWeather.daily.data[0].temperatureMax) %>&deg;</div>
+          <div class="label">High</div>
+        </div>
+        <div class="ui statistic">
+          <div class="value"><%= Math.round(endWeather.daily.data[0].temperatureMin) %>&deg;</div>
+          <div class="label">Low</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<%- include('partials/footer.ejs') %>

@@ -1,0 +1,41 @@
+<%- include('partials/header.ejs') %>
+
+<form id="main-form" class="main-form" action="/results" method="GET"> 
+  <div class="ui stackable four column centered grid">
+    <div class="column">
+      <div class="ui fluid massive transparent input main-input">
+        <input type="text" placeholder="Start" name="start">
+      </div>
+    </div>
+    <div class="column">
+      <div class="ui fluid massive transparent input main-input">
+        <input type="text" placeholder="End" name="end">
+      </div>
+    </div>
+    <input id="routeId" style="display:none" type="text" name="routeId">
+    <div class="row">
+      <div class="column center-content">
+        <button class="ui big button" type="Submit">Search</button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<div class="ui three column centered grid">
+  <div class="column">
+    <div class="ui big middle aligned selection list">
+      <% for (var i = 0; i < routes.length; i++) { %>
+      <div class="item">
+        <div class="content">
+          <div id="<%= routes[i].id %>" class="header routeSelect"><%= routes[i].startLocation %> to <%= routes[i].endLocation %></div>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+
+
+
+<%- include('partials/footer.ejs') %>
