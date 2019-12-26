@@ -153,7 +153,9 @@ app.post("/register", function(req, res) {
       console.log(err)
     } else {
       console.log(newUser)
-      res.redirect("/")
+      passport.authenticate("local")(req, res, function(){ 
+        res.redirect("/")
+      })
     }
   })
 })
