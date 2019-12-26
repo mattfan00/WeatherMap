@@ -2,6 +2,7 @@ var express = require("express"),
     app = express(),
     request = require("request"),
     mongoose = require("mongoose"),
+    bodyParser = require("body-parser")
     passport = require("passport"),
     LocalStrategy = require("passport-local"),
     User = require("./models/user.js"),
@@ -11,6 +12,7 @@ mongoose.connect("mongodb://localhost:27017/weathermap", {useNewUrlParser: true,
 app.use(express.static(__dirname + "/public"))
 
 app.set('view engine', 'ejs')
+app.use(bodyParser.urlencoded({extended:true}))
 
 // PASSPORT CONFIGURATION
 app.use(require("express-session")({
@@ -115,12 +117,38 @@ app.get("/results", function(req, res) {
   }
 })
 
-// AUTH ROUTES
+// AUTH ROUTES =============================================
 
 app.get("/register", function(req, res) {
   res.render("register")
 })
 
+app.post("/register", function(req, res) {
+  User.register(new User({username:req.body.username}), req.body.password, function(err, newUser) {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log(newUser)
+      res.redirect("/")
+    }
+  })
+})
+
+app.get("/login", function(req, res) {
+  res.render("login")
+})
+
+app.post("/login", passport.authenticate("local", {
+  successRedirect: "/",
+  failureRedirect: "/login"
+}), function(req, res) {
+})
+
+app.get("/logout", function(req, res){
+  console.log(req.user.username + " has logged out")
+  req.logout()
+  res.redirect("/")
+})
 
 
 app.listen(3000, function() {
