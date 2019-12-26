@@ -53,6 +53,7 @@ app.get("/", function(req, res) {
 })
 
 app.get("/results", function(req, res) {
+  console.log(req.query)
   if (req.query.routeId != "") {
     FavRoute.findById(req.query.routeId, function(err, foundRoute) {
       if (err) {
@@ -90,20 +91,22 @@ app.get("/results", function(req, res) {
         var startWeatherData = JSON.parse(body)
         request(endWeatherURL, function(error, response, body) {
           var endWeatherData = JSON.parse(body)
-          FavRoute.create({
-            startLocation:req.query.start,
-            startLat: startCoordinate.lat,
-            startLng: startCoordinate.lng,
-            endLocation:req.query.end,
-            endLat: endCoordinate.lat,
-            endLng: endCoordinate.lng,
-          }, function(err, newRoute) {
-            if (err) {
-              console.log(err)
-            } else {
-              console.log(newRoute)
-            }
-          })
+          if (req.query.isFavRoute != null) {
+            FavRoute.create({
+              startLocation:req.query.start,
+              startLat: startCoordinate.lat,
+              startLng: startCoordinate.lng,
+              endLocation:req.query.end,
+              endLat: endCoordinate.lat,
+              endLng: endCoordinate.lng,
+            }, function(err, newRoute) {
+              if (err) {
+                console.log(err)
+              } else {
+                console.log(newRoute)
+              }
+            })
+          }
           res.render("results", {
             startLocation:req.query.start, 
             endLocation:req.query.end, 
