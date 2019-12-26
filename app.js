@@ -26,6 +26,12 @@ passport.use(new LocalStrategy(User.authenticate()))
 passport.serializeUser(User.serializeUser())
 passport.deserializeUser(User.deserializeUser())
 
+// PASS IN THE CURRENT USER TO EVERY ROUTE
+app.use(function(req, res, next) {
+  res.locals.currentUser = req.user
+  next()
+})
+
 // FavRoute.create({
 //   startLocation: "New York City",
 //   startLat: 40.7124773,
@@ -43,13 +49,26 @@ passport.deserializeUser(User.deserializeUser())
 
 
 app.get("/", function(req, res) {
-  FavRoute.find({}, function(err, foundRoutes) {
-    if(err) {
-      console.log(err)
-    } else {
-      res.render("index", {routes:foundRoutes})
-    }
-  })
+  console.log(req.user)
+  if(req.user) {
+    User.findById(req.user.id).populate("favRoutes").exec(function(err, user) {
+      if(err) {
+        console.log(err)
+      } else {
+        console.log(user)
+        res.render("index", {routes:user.favRoutes})
+      }
+    })
+  } else {
+    res.render("index", {routes:null})
+  }
+  // FavRoute.find({}, function(err, foundRoutes) {
+  //   if(err) {
+  //     console.log(err)
+  //   } else {
+  //     res.render("index", {routes:foundRoutes})
+  //   }
+  // })
 })
 
 app.get("/results", function(req, res) {
@@ -104,6 +123,8 @@ app.get("/results", function(req, res) {
                 console.log(err)
               } else {
                 console.log(newRoute)
+                req.user.favRoutes.push(newRoute)
+                req.user.save()
               }
             })
           }

@@ -14,15 +14,21 @@
         Home
       </a>
       <div class="right menu">
+        <% if(!currentUser) { %>
         <a class="ui item" href="/register">
           Sign up
         </a>
         <a class="ui item" href="/login">
           Login
         </a>
+        <% } else { %>
+        <div class="ui item">
+            Signed in as <%= currentUser.username %>
+        </div>
         <a class="ui item" href="/logout">
           Logout
         </a>
+        <% } %>
       </div>
     </div>
 

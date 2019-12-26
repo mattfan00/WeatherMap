@@ -26,13 +26,15 @@
 <div class="ui three column centered grid">
   <div class="column">
     <div class="ui big middle aligned selection list">
-      <% for (var i = 0; i < routes.length; i++) { %>
-      <div class="item">
-        <div class="content">
-          <div id="<%= routes[i].id %>" class="header routeSelect"><%= routes[i].startLocation %> to <%= routes[i].endLocation %></div>
-        </div>
-      </div>
-      <% } %>
+      <% if (routes) { %>
+        <% for (var i = 0; i < routes.length; i++) { %>
+          <div class="item">
+            <div class="content">
+              <div id="<%= routes[i].id %>" class="header routeSelect"><%= routes[i].startLocation %> to <%= routes[i].endLocation %></div>
+            </div>
+          </div>
+        <% } %>
+      <% } %> 
     </div>
   </div>
 </div>
