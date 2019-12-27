@@ -20,7 +20,7 @@
 </form>
 
 
-<div class="ui four column centered grid">
+<!-- <div class="ui four column centered grid">
   <div class="column">
     <div class="ui card">
       <div class="content">
@@ -34,6 +34,9 @@
           <div class="value"><%= Math.round(startWeather.daily.data[0].temperatureMin) %>&deg;</div>
           <div class="label">Low</div>
         </div>
+        <% precipitation = startWeather.daily.data[0].precipType.charAt(0).toUpperCase() + endWeather.daily.data[0].precipType.slice(1) %>
+        <% percentPrecip = startWeather.daily.data[0].precipProbability * 100 %>
+        <div><%= precipitation %>: <%= percentPrecip %>%</div>
       </div>
     </div>
   </div>
@@ -50,10 +53,50 @@
           <div class="value"><%= Math.round(endWeather.daily.data[0].temperatureMin) %>&deg;</div>
           <div class="label">Low</div>
         </div>
+        <% precipitation = endWeather.daily.data[0].precipType.charAt(0).toUpperCase() + endWeather.daily.data[0].precipType.slice(1) %>
+        <% percentPrecip = endWeather.daily.data[0].precipProbability * 100 %>
+        <div><%= precipitation %>: <%= percentPrecip %>%</div>
       </div>
     </div>
   </div>
-</div>
+</div> -->
+
+
+<!-- <div class="ui grid">
+  <div class="column">
+    <div class="ui steps">
+      <div class="step">
+        <div class="content">
+          <div class="title"><%= startLocation %></div>
+          <div class="description"><%= startWeather.daily.data[0].summary %></div>
+          <div class="ui statistic">
+            <div class="value"><%= Math.round(startWeather.daily.data[0].temperatureMax) %>&deg;</div>
+            <div class="label">High</div>
+          </div>
+          <div class="ui statistic">
+            <div class="value"><%= Math.round(startWeather.daily.data[0].temperatureMin) %>&deg;</div>
+            <div class="label">Low</div>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="content">
+          <div class="title"><%= endLocation %></div>
+          <div class="description"><%= endWeather.daily.data[0].summary %></div>
+          <div class="ui statistic">
+            <div class="value"><%= Math.round(endWeather.daily.data[0].temperatureMax) %>&deg;</div>
+            <div class="label">High</div>
+          </div>
+          <div class="ui statistic">
+            <div class="value"><%= Math.round(endWeather.daily.data[0].temperatureMin) %>&deg;</div>
+            <div class="label">Low</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> -->
+
 
 
 <%- include('partials/footer.ejs') %>
