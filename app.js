@@ -1,7 +1,6 @@
 var express = require("express"),
     app = express(),
     request = require("request"),
-    rp = require("request-promise"),
     mongoose = require("mongoose"),
     bodyParser = require("body-parser")
     passport = require("passport"),
@@ -65,13 +64,20 @@ app.get("/", function(req, res) {
 
 
 app.get("/results", function(req, res) {
-  var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?origin=New+York+City&destination=Cornell&key=AIzaSyBJNeer3QfoD1Jex9H1lOoxtfXKRkKYzik"
+  var startLocation = req.query.start.split(' ').join('+')
+  var endLocation = req.query.end.split(' ').join('+')
+  var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?origin=" + startLocation + "&destination=" + endLocation + "&key=AIzaSyBJNeer3QfoD1Jex9H1lOoxtfXKRkKYzik"
   var directionsPromise = getDirectionsData(mapsURL)
   directionsPromise.then(function(result) {
-    console.log(result)
-    loadAllLocations(result).then(function(allLocations) {
-      res.send("hi")
-      // res.render("results", {locations:allLocations})
+    loadAllLocationNames(result).then(function(allLocationNames) {
+      loadWeatherData(allLocationNames).then(function(completeData) {
+        console.log(completeData)
+        res.render("results", {
+          startLocation:req.query.start,
+          endLocation:req.query.end,
+          data:completeData
+        })
+      })
     })
   })
   // if (req.query.routeId != "") {
@@ -154,28 +160,57 @@ function getDirectionsData(mapsURL) {
   })
 }
 
-function getCity(geocodeURL) {
+function getGeocode(geocodeURL) {
   return new Promise(function(resolve, reject) {
     request(geocodeURL, function(err, response, body) {
-      resolve(JSON.parse(body).results[0].formatted_address)
+      var parsedData = JSON.parse(body) 
+      resolve(parsedData.plus_code.compound_code.slice(8))
     })
   })
 }
 
-async function loadAllLocations(coordinates) {
+function getWeather(weatherURL) {
+  return new Promise(function(resolve, reject) {
+    request(weatherURL, function(err, response, body) {
+      var parsedData = JSON.parse(body)
+      var weatherStats = {}
+      weatherStats.summary = parsedData.daily.data[0].summary
+      weatherStats.temperatureMax = Math.round(parsedData.daily.data[0].temperatureMax)
+      weatherStats.temperatureMin = Math.round(parsedData.daily.data[0].temperatureMin)
+      weatherStats.precipType = parsedData.daily.data[0].precipType.charAt(0).toUpperCase() + parsedData.daily.data[0].precipType.slice(1)
+      weatherStats.precipProb = Math.round(parsedData.daily.data[0].precipProbability * 100)
+      resolve(weatherStats)
+    })
+  })
+}
+
+async function loadAllLocationNames(locations) {
   var geocodeRequest = null
-  var allLocations = []
-  for (var coordinate of coordinates) {
-    var geocodeURL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + coordinate.lat + "," + coordinate.lng + "&key=AIzaSyBJNeer3QfoD1Jex9H1lOoxtfXKRkKYzik"
-    geocodeRequest = getCity(geocodeURL)
+  var allLocations = locations
+  for (var i = 0; i < locations.length; i++) {
+    var geocodeURL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + locations[i].lat + "," + locations[i].lng + "&key=AIzaSyBJNeer3QfoD1Jex9H1lOoxtfXKRkKYzik"
+    geocodeRequest = getGeocode(geocodeURL)
     await geocodeRequest.then(function(result) {
-      allLocations.push(result)
+      allLocations[i].name = result
     })
   }
   return allLocations
 }
 
-// AUTH ROUTES =============================================
+async function loadWeatherData(locations) {
+  var weatherRequest = null
+  var allLocations = locations
+  for (var i = 0; i < locations.length; i++) {
+    var weatherURL = "https://api.darksky.net/forecast/bdb26ed30749fa159aa832d2d415056a/" + locations[i].lat + "," + locations[i].lng
+    weatherRequest = getWeather(weatherURL)
+    await weatherRequest.then(function(result) {
+      allLocations[i].weatherStats = result
+    })
+  }
+  return allLocations
+}
+
+// AUTH ROUTES ==================================================================
 
 app.get("/register", function(req, res) {
   res.render("register")
