@@ -32,21 +32,8 @@ app.use(function(req, res, next) {
   next()
 })
 
-// FavRoute.create({
-//   startLocation: "New York City",
-//   startLat: 40.7124773,
-//   startLng: -74.0062007,
-//   endLocation: "Cornell",
-//   endLat: 42.4427379,
-//   endLng: -76.46980649999999
-// }, function(err, newFavRoute) {
-//   if (err) {
-//     console.log(err)
-//   } else {
-//     console.log(newFavRoute)
-//   }
-// })
 
+// ROUTES =========================================================================
 
 app.get("/", function(req, res) {
   if(req.user) {
@@ -64,86 +51,53 @@ app.get("/", function(req, res) {
 
 
 app.get("/results", function(req, res) {
-  var startLocation = req.query.start.split(' ').join('+')
-  var endLocation = req.query.end.split(' ').join('+')
-  var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?origin=" + startLocation + "&destination=" + endLocation + "&key=AIzaSyBJNeer3QfoD1Jex9H1lOoxtfXKRkKYzik"
-  var directionsPromise = getDirectionsData(mapsURL)
-  directionsPromise.then(function(result) {
-    loadAllLocationNames(result).then(function(allLocationNames) {
-      loadWeatherData(allLocationNames).then(function(completeData) {
-        console.log(completeData)
-        res.render("results", {
-          startLocation:req.query.start,
-          endLocation:req.query.end,
-          data:completeData
+  if (req.query.routeId != "") {
+    FavRoute.findById(req.query.routeId, function(err, foundRoute) {
+        if (err) {
+          console.log(err)
+        } else {
+          loadWeatherData(foundRoute.route).then(function(filteredData) {
+            res.render("results", {
+              startLocation:req.query.start,
+              endLocation:req.query.end,
+              data:filteredData
+            })
+          })
+        }
+    })
+  } else {
+    var startLocation = req.query.start.split(' ').join('+')
+    var endLocation = req.query.end.split(' ').join('+')
+    var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?origin=" + startLocation + "&destination=" + endLocation + "&key=AIzaSyBJNeer3QfoD1Jex9H1lOoxtfXKRkKYzik"
+    var directionsPromise = getDirectionsData(mapsURL)
+    directionsPromise.then(function(result) {
+      loadAllLocationNames(result).then(function(allLocationNames) {
+        loadWeatherData(allLocationNames).then(function(completeData) {
+          filteredData = filterData(completeData)
+          if (req.query.isFavRoute != null) {
+            FavRoute.create({
+              startLocation:req.query.start,
+              endLocation:req.query.end,
+              route:filterData(allLocationNames)
+            }, function(err, newRoute){
+              req.user.favRoutes.push(newRoute)
+              req.user.save()
+            })
+          }
+          res.render("results", {
+            startLocation:req.query.start,
+            endLocation:req.query.end,
+            data:filteredData
+          })
         })
       })
     })
-  })
-  // if (req.query.routeId != "") {
-  //   FavRoute.findById(req.query.routeId, function(err, foundRoute) {
-  //     if (err) {
-  //       console.log(err)
-  //     } else {
-  //       var startWeatherURL = "https://api.darksky.net/forecast/bdb26ed30749fa159aa832d2d415056a/" + foundRoute.startLat + "," + foundRoute.startLng
-  //       var endWeatherURL = "https://api.darksky.net/forecast/bdb26ed30749fa159aa832d2d415056a/" + foundRoute.endLat + "," + foundRoute.endLng
-  //       request(startWeatherURL, function(error, response, body) {
-  //         var startWeatherData = JSON.parse(body)
-  //         request(endWeatherURL, function(error, response, body) {
-  //           var endWeatherData = JSON.parse(body)
-  //           res.render("results", {
-  //             startLocation:foundRoute.startLocation, 
-  //             endLocation:foundRoute.endLocation, 
-  //             startWeather: startWeatherData,
-  //             endWeather: endWeatherData
-  //           })
-  //         })
-  //       })
-  //     }
-  //   })
-  // } else {
-  //   var startLocation = req.query.start.split(' ').join('+')
-  //   var endLocation = req.query.end.split(' ').join('+')
-  //   var mapsURL = "https://maps.googleapis.com/maps/api/directions/json?origin=" + startLocation + "&destination=" + endLocation + "&key=AIzaSyBJNeer3QfoD1Jex9H1lOoxtfXKRkKYzik"
-  //   request(mapsURL, function(error, response, body) {
-  //     var distanceData = JSON.parse(body)
-  //     var startCoordinate = distanceData.routes[0].legs[0].start_location
-  //     var endCoordinate = distanceData.routes[0].legs[0].end_location
-  //     var startWeatherURL = "https://api.darksky.net/forecast/bdb26ed30749fa159aa832d2d415056a/" + startCoordinate.lat + "," + startCoordinate.lng
-  //     var endWeatherURL = "https://api.darksky.net/forecast/bdb26ed30749fa159aa832d2d415056a/" + endCoordinate.lat + "," + endCoordinate.lng
-  //     request(startWeatherURL, function(error, response, body) {
-  //       var startWeatherData = JSON.parse(body)
-  //       request(endWeatherURL, function(error, response, body) {
-  //         var endWeatherData = JSON.parse(body)
-  //         if (req.query.isFavRoute != null) {
-  //           FavRoute.create({
-  //             startLocation:req.query.start,
-  //             startLat: startCoordinate.lat,
-  //             startLng: startCoordinate.lng,
-  //             endLocation:req.query.end,
-  //             endLat: endCoordinate.lat,
-  //             endLng: endCoordinate.lng,
-  //           }, function(err, newRoute) {
-  //             if (err) {
-  //               console.log(err)
-  //             } else {
-  //               req.user.favRoutes.push(newRoute)
-  //               req.user.save()
-  //             }
-  //           })
-  //         }
-  //         res.render("results", {
-  //           startLocation:req.query.start, 
-  //           endLocation:req.query.end, 
-  //           startWeather: startWeatherData,
-  //           endWeather: endWeatherData
-  //         })
-  //       })
-  //     })
-      
-  //   })
-  // }
+  }
 })
+
+
+
+// HELPER FUNCTIONS ==========================================================
 
 function getDirectionsData(mapsURL) {
   return new Promise(function(resolve, reject) {
@@ -186,7 +140,7 @@ function getWeather(weatherURL) {
 
 async function loadAllLocationNames(locations) {
   var geocodeRequest = null
-  var allLocations = locations
+  var allLocations = locations.map(a => Object.assign({}, a)) // creates a copy of locations array 
   for (var i = 0; i < locations.length; i++) {
     var geocodeURL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + locations[i].lat + "," + locations[i].lng + "&key=AIzaSyBJNeer3QfoD1Jex9H1lOoxtfXKRkKYzik"
     geocodeRequest = getGeocode(geocodeURL)
@@ -199,7 +153,7 @@ async function loadAllLocationNames(locations) {
 
 async function loadWeatherData(locations) {
   var weatherRequest = null
-  var allLocations = locations
+  var allLocations = locations.map(a => Object.assign({}, a)) // creates a copy of locations array
   for (var i = 0; i < locations.length; i++) {
     var weatherURL = "https://api.darksky.net/forecast/bdb26ed30749fa159aa832d2d415056a/" + locations[i].lat + "," + locations[i].lng
     weatherRequest = getWeather(weatherURL)
@@ -208,6 +162,18 @@ async function loadWeatherData(locations) {
     })
   }
   return allLocations
+}
+
+function filterData(data) {
+  var checkedCities = []
+  var filteredData = []
+  for (var i = 0; i < data.length; i++) {
+    if (!checkedCities.includes(data[i].name)) {
+      filteredData.push(data[i])
+      checkedCities.push(data[i].name)
+    }
+  }
+  return filteredData
 }
 
 // AUTH ROUTES ==================================================================
