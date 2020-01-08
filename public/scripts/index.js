@@ -13,7 +13,10 @@ $(document).ready(function() {
     } else {
       $("#favRoute").prop("checked", false)
     }
-    
+  })
+
+  $(".submitButton").click(function() {
+    $(".submitButton").addClass("loading")
   })
 
 })
